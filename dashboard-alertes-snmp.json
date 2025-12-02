@@ -1,0 +1,529 @@
+{
+  "dashboard": {
+    "title": "Alertes & Traps SNMP",
+    "tags": ["alertes", "snmp", "monitoring"],
+    "timezone": "browser",
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "Alertes CRITICAL Actives",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(count_over_time({job=~\".+\"} |~ \"(?i)critical|fatal\" [5m]))",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "graphMode": "none",
+          "colorMode": "background",
+          "justifyMode": "auto",
+          "textMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": null,
+                  "color": "green"
+                },
+                {
+                  "value": 1,
+                  "color": "red"
+                }
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Alertes WARNING Actives",
+        "gridPos": {
+          "x": 6,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(count_over_time({job=~\".+\"} |~ \"(?i)warning|warn\" [5m]))",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "graphMode": "none",
+          "colorMode": "background",
+          "justifyMode": "auto",
+          "textMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": null,
+                  "color": "green"
+                },
+                {
+                  "value": 1,
+                  "color": "orange"
+                }
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "Redémarrages de Conteneurs (6h)",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(count_over_time({job=~\".+\"} |~ \"(?i)restart|restarting\" [6h]))",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "justifyMode": "auto",
+          "textMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": null,
+                  "color": "green"
+                },
+                {
+                  "value": 1,
+                  "color": "yellow"
+                },
+                {
+                  "value": 3,
+                  "color": "red"
+                }
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Logs Alertmanager (5min)",
+        "gridPos": {
+          "x": 18,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(count_over_time({container=\"/alertmanager\"}[5m]))",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "justifyMode": "auto",
+          "textMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "timeseries",
+        "title": "Taux d'Alertes au Fil du Temps",
+        "gridPos": {
+          "x": 0,
+          "y": 4,
+          "w": 24,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(rate({job=~\".+\"} |~ \"(?i)critical|fatal\" [1m]))",
+            "refId": "A",
+            "legendFormat": "Critical",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          },
+          {
+            "expr": "sum(rate({job=~\".+\"} |~ \"(?i)warning|warn\" [1m]))",
+            "refId": "B",
+            "legendFormat": "Warning",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          },
+          {
+            "expr": "sum(rate({job=~\".+\"} |~ \"(?i)error\" [1m]))",
+            "refId": "C",
+            "legendFormat": "Error",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "tooltip": {
+            "mode": "multi"
+          },
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 25,
+              "showPoints": "never",
+              "axisPlacement": "auto",
+              "stacking": {
+                "mode": "normal"
+              }
+            },
+            "unit": "alerts/s"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Critical"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "red"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Warning"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "orange"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Error"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "yellow"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "type": "logs",
+        "title": "Logs Alertmanager",
+        "gridPos": {
+          "x": 0,
+          "y": 12,
+          "w": 12,
+          "h": 10
+        },
+        "targets": [
+          {
+            "expr": "{container=\"/alertmanager\"}",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "showCommonLabels": false,
+          "wrapLogMessage": true,
+          "prettifyLogMessage": false,
+          "enableLogDetails": true,
+          "dedupStrategy": "none",
+          "sortOrder": "Descending"
+        }
+      },
+      {
+        "id": 7,
+        "type": "logs",
+        "title": "Logs SNMP Notifier",
+        "gridPos": {
+          "x": 12,
+          "y": 12,
+          "w": 12,
+          "h": 10
+        },
+        "targets": [
+          {
+            "expr": "{container=\"/snmp-notifier\"}",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "showCommonLabels": false,
+          "wrapLogMessage": true,
+          "prettifyLogMessage": false,
+          "enableLogDetails": true,
+          "dedupStrategy": "none",
+          "sortOrder": "Descending"
+        }
+      },
+      {
+        "id": 8,
+        "type": "logs",
+        "title": "Logs SNMPtrapd (Traps Reçus)",
+        "gridPos": {
+          "x": 0,
+          "y": 22,
+          "w": 24,
+          "h": 10
+        },
+        "targets": [
+          {
+            "expr": "{container=\"/snmptrapd\"}",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "showCommonLabels": false,
+          "wrapLogMessage": true,
+          "prettifyLogMessage": false,
+          "enableLogDetails": true,
+          "dedupStrategy": "none",
+          "sortOrder": "Descending"
+        }
+      },
+      {
+        "id": 9,
+        "type": "logs",
+        "title": "Alertes CRITICAL Récentes",
+        "gridPos": {
+          "x": 0,
+          "y": 32,
+          "w": 12,
+          "h": 10
+        },
+        "targets": [
+          {
+            "expr": "{job=~\".+\"} |~ \"(?i)critical|fatal\"",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "showCommonLabels": false,
+          "wrapLogMessage": true,
+          "prettifyLogMessage": false,
+          "enableLogDetails": true,
+          "dedupStrategy": "none",
+          "sortOrder": "Descending"
+        }
+      },
+      {
+        "id": 10,
+        "type": "logs",
+        "title": "Alertes WARNING Récentes",
+        "gridPos": {
+          "x": 12,
+          "y": 32,
+          "w": 12,
+          "h": 10
+        },
+        "targets": [
+          {
+            "expr": "{job=~\".+\"} |~ \"(?i)warning|warn\"",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "showCommonLabels": false,
+          "wrapLogMessage": true,
+          "prettifyLogMessage": false,
+          "enableLogDetails": true,
+          "dedupStrategy": "none",
+          "sortOrder": "Descending"
+        }
+      },
+      {
+        "id": 11,
+        "type": "barchart",
+        "title": "Alertes par Conteneur (dernières 6h)",
+        "gridPos": {
+          "x": 0,
+          "y": 42,
+          "w": 24,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum by (container) (count_over_time({job=~\".+\"} |~ \"(?i)critical|warning|error\" [6h]))",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "xTickLabelRotation": 0,
+          "xTickLabelSpacing": 0,
+          "showValue": "always",
+          "legend": {
+            "displayMode": "hidden"
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "short"
+          }
+        }
+      }
+    ]
+  },
+  "overwrite": true,
+  "folderUid": "",
+  "message": "Dashboard des alertes et traps SNMP créé automatiquement"
+}

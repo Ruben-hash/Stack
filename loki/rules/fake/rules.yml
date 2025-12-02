@@ -1,0 +1,82 @@
+groups:
+  # Alertes instantanées (déclenchement rapide)
+  - name: instant_alerts
+    interval: 15s
+    rules:
+      - alert: InstantError
+        expr: count_over_time({job=~".+"} |~ "(?i)error" [30s]) > 0
+        for: 15s
+        labels:
+          severity: critical
+          category: instant
+        annotations:
+          summary: "ERROR détecté dans les logs"
+          description: "Le mot ERROR apparaît dans les logs"
+      
+      - alert: InstantCritical
+        expr: count_over_time({job=~".+"} |~ "(?i)critical" [30s]) > 0
+        for: 15s
+        labels:
+          severity: critical
+          category: instant
+        annotations:
+          summary: "CRITICAL détecté dans les logs"
+          description: "Le mot CRITICAL apparaît dans les logs"
+
+  # Alertes critiques
+  - name: critical_alerts
+    interval: 1m
+    rules:
+      - alert: HighErrorRate
+        expr: sum(rate({job=~".+"} |~ "(?i)error|fatal" [2m])) > 5
+        for: 2m
+        labels:
+          severity: critical
+          category: errors
+        annotations:
+          summary: "Taux d'erreur critique"
+          description: "Plus de 5 erreurs/sec pendant 2 minutes"
+      
+      - alert: ServiceDown
+        expr: sum(rate({job=~".+"} [5m])) == 0
+        for: 5m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Service ne produit plus de logs"
+          description: "Aucun log depuis 5 minutes"
+      
+      - alert: ContainerRestarting
+        expr: sum(count_over_time({job=~".+"} |~ "(?i)restart|restarting" [10m])) > 3
+        for: 1m
+        labels:
+          severity: critical
+          category: stability
+        annotations:
+          summary: "Conteneur redémarre fréquemment"
+          description: "Plus de 3 redémarrages en 10 minutes"
+
+  # Alertes warning
+  - name: warning_alerts
+    interval: 1m
+    rules:
+      - alert: HighWarningRate
+        expr: sum(rate({job=~".+"} |~ "(?i)warn|warning" [5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: warnings
+        annotations:
+          summary: "Taux de warnings élevé"
+          description: "Plus de 10 warnings/sec pendant 5 minutes"
+      
+      - alert: HighLogVolume
+        expr: sum(rate({job=~".+"} [5m])) > 50
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Volume de logs très élevé"
+          description: "Plus de 50 logs/sec"

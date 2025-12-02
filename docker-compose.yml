@@ -1,0 +1,99 @@
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  loki-data:
+  grafana-data:
+
+services:
+  # Loki - Stockage et analyse de logs
+  loki:
+    image: grafana/loki:2.9.3
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/config.yml
+      - ./loki/rules:/loki/rules
+      - loki-data:/loki
+    command: -config.file=/etc/loki/config.yml
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Alloy - Collecteur de logs
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    ports:
+      - "12345:12345"
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log:ro
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Grafana - Visualisation
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Alertmanager - Gestion des alertes
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # SNMP Notifier - Conversion alertes → SNMP
+  snmp-notifier:
+    image: maxwo/snmp-notifier:latest
+    container_name: snmp-notifier
+    ports:
+      - "9464:9464"
+    volumes:
+      - ./snmp_notifier/snmp_notifier.yaml:/etc/snmp_notifier/snmp_notifier.yml:ro
+    environment:
+      - SNMP_NOTIFIER_COMMUNITY=public
+      - SNMP_NOTIFIER_SNMP_DESTINATION=snmptrapd:162
+    networks:
+      - monitoring
+    depends_on:
+      - snmptrapd
+    restart: unless-stopped
+
+  # SNMPtrapd - Réception des traps
+  snmptrapd:
+    build:
+      context: ./snmptrapd
+      dockerfile: Dockerfile
+    container_name: snmptrapd
+    ports:
+      - "162:162/udp"
+    networks:
+      - monitoring
+    restart: unless-stopped

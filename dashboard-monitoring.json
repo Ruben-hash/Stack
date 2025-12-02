@@ -1,0 +1,687 @@
+{
+  "dashboard": {
+    "title": "Monitoring Stack - Logs & Alertes",
+    "tags": ["monitoring", "loki", "alertes"],
+    "timezone": "browser",
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "Total Logs (dernière heure)",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(count_over_time({job=~\".+\"}[1h]))",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "justifyMode": "auto",
+          "textMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": null,
+                  "color": "green"
+                },
+                {
+                  "value": 1000,
+                  "color": "yellow"
+                },
+                {
+                  "value": 5000,
+                  "color": "red"
+                }
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Logs d'Erreur (dernière heure)",
+        "gridPos": {
+          "x": 6,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(count_over_time({job=~\".+\"} |~ \"(?i)error|fatal|critical\" [1h]))",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "justifyMode": "auto",
+          "textMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": null,
+                  "color": "green"
+                },
+                {
+                  "value": 10,
+                  "color": "yellow"
+                },
+                {
+                  "value": 50,
+                  "color": "red"
+                }
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "Conteneurs Actifs",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "count(count by (container) (count_over_time({job=~\".+\"}[5m])))",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "graphMode": "none",
+          "colorMode": "value",
+          "justifyMode": "auto",
+          "textMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Taux de Logs (par seconde)",
+        "gridPos": {
+          "x": 18,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(rate({job=~\".+\"}[1m]))",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "justifyMode": "auto",
+          "textMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": null,
+                  "color": "green"
+                },
+                {
+                  "value": 10,
+                  "color": "yellow"
+                },
+                {
+                  "value": 50,
+                  "color": "red"
+                }
+              ]
+            },
+            "unit": "logs/s",
+            "decimals": 2
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "timeseries",
+        "title": "Taux de Logs par Seconde",
+        "gridPos": {
+          "x": 0,
+          "y": 4,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(rate({job=~\".+\"}[1m]))",
+            "refId": "A",
+            "legendFormat": "Total",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "tooltip": {
+            "mode": "multi"
+          },
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 20,
+              "showPoints": "never",
+              "axisPlacement": "auto"
+            },
+            "unit": "logs/s"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "type": "timeseries",
+        "title": "Taux d'Erreurs par Seconde",
+        "gridPos": {
+          "x": 12,
+          "y": 4,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(rate({job=~\".+\"} |~ \"(?i)error\" [1m]))",
+            "refId": "A",
+            "legendFormat": "Errors",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          },
+          {
+            "expr": "sum(rate({job=~\".+\"} |~ \"(?i)warn\" [1m]))",
+            "refId": "B",
+            "legendFormat": "Warnings",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          },
+          {
+            "expr": "sum(rate({job=~\".+\"} |~ \"(?i)critical|fatal\" [1m]))",
+            "refId": "C",
+            "legendFormat": "Critical",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "tooltip": {
+            "mode": "multi"
+          },
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 20,
+              "showPoints": "never",
+              "axisPlacement": "auto"
+            },
+            "unit": "logs/s"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Critical"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "red"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Errors"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "orange"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Warnings"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "yellow"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "type": "barchart",
+        "title": "Logs par Conteneur (dernière heure)",
+        "gridPos": {
+          "x": 0,
+          "y": 12,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum by (container) (count_over_time({job=~\".+\"}[1h]))",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "xTickLabelRotation": 0,
+          "xTickLabelSpacing": 0,
+          "showValue": "always",
+          "legend": {
+            "displayMode": "hidden"
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "type": "piechart",
+        "title": "Distribution des Logs par Sévérité",
+        "gridPos": {
+          "x": 12,
+          "y": 12,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(count_over_time({job=~\".+\"} |~ \"(?i)error\" [1h]))",
+            "refId": "A",
+            "legendFormat": "Errors",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          },
+          {
+            "expr": "sum(count_over_time({job=~\".+\"} |~ \"(?i)warn\" [1h]))",
+            "refId": "B",
+            "legendFormat": "Warnings",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          },
+          {
+            "expr": "sum(count_over_time({job=~\".+\"} |~ \"(?i)info\" [1h]))",
+            "refId": "C",
+            "legendFormat": "Info",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          },
+          {
+            "expr": "sum(count_over_time({job=~\".+\"} |~ \"(?i)debug\" [1h]))",
+            "refId": "D",
+            "legendFormat": "Debug",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "right",
+            "values": ["value", "percent"]
+          },
+          "pieType": "donut",
+          "displayLabels": ["percent"],
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Errors"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "red"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Warnings"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "orange"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Info"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "blue"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Debug"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "green"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 9,
+        "type": "logs",
+        "title": "Logs Récents (tous)",
+        "gridPos": {
+          "x": 0,
+          "y": 20,
+          "w": 24,
+          "h": 10
+        },
+        "targets": [
+          {
+            "expr": "{job=~\".+\"}",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "showCommonLabels": false,
+          "wrapLogMessage": true,
+          "prettifyLogMessage": false,
+          "enableLogDetails": true,
+          "dedupStrategy": "none",
+          "sortOrder": "Descending"
+        }
+      },
+      {
+        "id": 10,
+        "type": "logs",
+        "title": "Logs d'Erreur Récents",
+        "gridPos": {
+          "x": 0,
+          "y": 30,
+          "w": 24,
+          "h": 10
+        },
+        "targets": [
+          {
+            "expr": "{job=~\".+\"} |~ \"(?i)error|fatal|critical\"",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "showCommonLabels": false,
+          "wrapLogMessage": true,
+          "prettifyLogMessage": false,
+          "enableLogDetails": true,
+          "dedupStrategy": "none",
+          "sortOrder": "Descending"
+        }
+      },
+      {
+        "id": 11,
+        "type": "table",
+        "title": "Top 10 Messages d'Erreur",
+        "gridPos": {
+          "x": 0,
+          "y": 40,
+          "w": 24,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "topk(10, sum by (container) (count_over_time({job=~\".+\"} |~ \"(?i)error\" [1h])))",
+            "refId": "A",
+            "datasource": {
+              "type": "loki",
+              "uid": "P8E80F9AEF21F6940"
+            }
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "sortBy": [
+            {
+              "displayName": "Value",
+              "desc": true
+            }
+          ]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "auto"
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Value"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 150
+                },
+                {
+                  "id": "displayName",
+                  "value": "Nombre d'Erreurs"
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "container"
+              },
+              "properties": [
+                {
+                  "id": "displayName",
+                  "value": "Conteneur"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "overwrite": true,
+  "folderUid": "",
+  "message": "Dashboard de monitoring créé automatiquement"
+}
