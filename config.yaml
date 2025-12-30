@@ -1,0 +1,6 @@
+alertmanager:
+  interval: 60s
+  servers:
+    - name: local
+      uri: http://alertmanager:9093  
+      timeout: 10s
