@@ -1,0 +1,3 @@
+[submodule "karma"]
+	path = karma
+	url = https://github.com/prymitive/karma.git
