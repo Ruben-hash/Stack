@@ -99,13 +99,11 @@ services:
     restart: unless-stopped
 
   alertmanagerdashboard:
-    build:
-      context: ./karma
-      dockerfile: ./Dockerfile
+    image: ghcr.io/prymitive/karma:latest 
     container_name: karma
     environment:
       ALERTMANAGER_URI: http://alertmanager:9093
-      CONFIG_FILE: /etc/config.yaml
+      # CONFIG_FILE: /etc/config.yaml      
     ports:
       - "8080:8080"
     networks:
