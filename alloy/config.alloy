@@ -1,16 +1,11 @@
+// ─── Envoi vers Loki ───────────────────────────────────────────────
 loki.write "default" {
   endpoint {
     url = "http://loki:3100/loki/api/v1/push"
   }
 }
 
-loki.source.docker "containers" {
-  host       = "unix:///var/run/docker.sock"
-  targets    = discovery.docker.containers.targets
-  forward_to = [loki.write.default.receiver]
-  relabel_rules = discovery.relabel.docker.rules
-}
-
+// ─── Logs Docker ───────────────────────────────────────────────────
 discovery.docker "containers" {
   host = "unix:///var/run/docker.sock"
 }
@@ -27,13 +22,32 @@ discovery.relabel "docker" {
     source_labels = ["__meta_docker_container_log_stream"]
     target_label  = "stream"
   }
+
+  // Optionnel : ajouter le nom de l'image comme label
+  rule {
+    source_labels = ["__meta_docker_container_image_name"]
+    target_label  = "image"
+  }
 }
 
-loki.source.file "system" {
-  targets = [
-    {__path__ = "/var/log/syslog", job = "syslog"},
-    {__path__ = "/var/log/auth.log", job = "auth"},
-    {__path__= "/var/log/*", job = "log"},
+loki.source.docker "containers" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.docker.containers.targets
+  forward_to    = [loki.write.default.receiver]
+  relabel_rules = discovery.relabel.docker.rules
+}
+
+// ─── Logs fichiers ─────────────────────────────────────────────────
+local.file_match "system_logs" {
+  path_targets = [
+    { __path__ = "/var/log/syslog",   job = "syslog" },
+    { __path__ = "/var/log/auth.log", job = "auth"   },
+    // Tout le reste dans /var/log SAUF syslog et auth.log
+    { __path__ = "/var/log/*.log",    job = "system"  },
   ]
+}
+
+loki.source.file "log" {
+  targets    = local.file_match.system_logs.targets
   forward_to = [loki.write.default.receiver]
 }

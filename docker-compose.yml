@@ -5,7 +5,7 @@ networks:
 volumes:
   loki-data:
   grafana-data:
-
+  alloy-data:
 services:
   # Loki - Stockage et analyse de logs
   loki:
@@ -32,11 +32,13 @@ services:
       - ./alloy/config.alloy:/etc/alloy/config.alloy
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/log:/var/log:ro
+      - alloy-data:/var/lib/alloy/data 
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     networks:
       - monitoring
     restart: unless-stopped
-
+    depends_on:
+      - loki
   # Grafana - Visualisation
   grafana:
     image: grafana/grafana:latest
@@ -109,3 +111,12 @@ services:
     networks:
       - monitoring
     restart: unless-stopped
+  log-generator:
+    image: mingrammer/flog:latest
+    container_name: log-generator
+    command: -f json -l -d 0.5 -w
+    networks:
+      - monitoring
+    restart: unless-stopped
+    depends_on:
+      - alloy
