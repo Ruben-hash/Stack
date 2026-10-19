@@ -6,6 +6,8 @@ volumes:
   loki-data:
   grafana-data:
   alloy-data:
+
+
 services:
   # Loki - Stockage et analyse de logs
   loki:
@@ -32,13 +34,14 @@ services:
       - ./alloy/config.alloy:/etc/alloy/config.alloy
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /var/log:/var/log:ro
-      - alloy-data:/var/lib/alloy/data 
+      - alloy-data:/var/lib/alloy/data
     command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     networks:
       - monitoring
     restart: unless-stopped
     depends_on:
       - loki
+
   # Grafana - Visualisation
   grafana:
     image: grafana/grafana:latest
@@ -101,22 +104,47 @@ services:
     restart: unless-stopped
 
   alertmanagerdashboard:
-    image: ghcr.io/prymitive/karma:latest 
+    image: ghcr.io/prymitive/karma:latest
     container_name: karma
     environment:
       ALERTMANAGER_URI: http://alertmanager:9093
-      # CONFIG_FILE: /etc/config.yaml      
     ports:
       - "8080:8080"
     networks:
       - monitoring
     restart: unless-stopped
+
+  # MODIFIÉ : générateur de fausses alertes réalistes (plusieurs services simulés)
   log-generator:
-    image: mingrammer/flog:latest
+    image: python:3.12-alpine
     container_name: log-generator
-    command: -f json -l -d 0.5 -w
+    volumes:
+      - ./log_generator.py:/app/log_generator.py:ro
+    command: ["python", "-u", "/app/log_generator.py"]
+    environment:
+      RATE: "1"            # lignes par seconde
+      ERROR_RATIO: "0.15"  # 15 % de warn/error
+      INCIDENT_EVERY: "60" # un incident en cascade toutes les 60 s
     networks:
       - monitoring
     restart: unless-stopped
     depends_on:
       - alloy
+  log-analyzer:
+    image: python:3.12-alpine
+    container_name: log-analyzer
+    working_dir: /app
+    volumes:
+      - ./analyse_logs.py:/app/analyse_logs.py:ro
+      - ./reports:/app/reports
+    environment:
+      LOKI_URL: http://loki:3100
+      LLM_URL: http://host.docker.internal:1235/v1
+      LLM_MODEL: phi-4-mini-reasoning
+      TZ: Europe/Paris
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - monitoring
+    profiles: ["tools"]     # ne démarre pas avec "docker compose up -d"
+    command: ["python", "-u", "analyse_logs.py", "--since", "1h"]
